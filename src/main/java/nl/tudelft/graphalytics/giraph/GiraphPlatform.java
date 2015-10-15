@@ -19,16 +19,17 @@ import nl.tudelft.graphalytics.Platform;
 import nl.tudelft.graphalytics.PlatformExecutionException;
 import nl.tudelft.graphalytics.configuration.ConfigurationUtil;
 import nl.tudelft.graphalytics.configuration.InvalidConfigurationException;
-import nl.tudelft.graphalytics.domain.Algorithm;
-import nl.tudelft.graphalytics.domain.Graph;
-import nl.tudelft.graphalytics.domain.NestedConfiguration;
-import nl.tudelft.graphalytics.domain.PlatformBenchmarkResult;
+import nl.tudelft.graphalytics.domain.*;
 import nl.tudelft.graphalytics.giraph.algorithms.bfs.BreadthFirstSearchJob;
 import nl.tudelft.graphalytics.giraph.algorithms.cd.CommunityDetectionJob;
 import nl.tudelft.graphalytics.giraph.algorithms.conn.ConnectedComponentsJob;
 import nl.tudelft.graphalytics.giraph.algorithms.evo.ForestFireModelJob;
 import nl.tudelft.graphalytics.giraph.algorithms.pr.PageRankJob;
 import nl.tudelft.graphalytics.giraph.algorithms.stats.LocalClusteringCoefficientJob;
+import nl.tudelft.graphalytics.giraph.reporting.logging.GiraphLogger;
+import nl.tudelft.graphalytics.reporting.granula.GranulaManager;
+import nl.tudelft.pds.granula.modeller.giraph.job.Giraph;
+import nl.tudelft.pds.granula.modeller.model.job.JobModel;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.giraph.conf.IntConfOption;
@@ -126,9 +127,31 @@ public class GiraphPlatform implements Platform {
 		pathsOfGraphs.put(graph.getName(), uploadPath);
 	}
 
+	public void preBenchmark(Benchmark benchmark) {
+
+		String logDataPath = benchmark.getLogPath();
+		GiraphLogger.stopCoreLogging();
+		if(GranulaManager.isLoggingEnabled) {
+			GiraphLogger.startPlatformLogging(logDataPath + "/OperationLog/driver.logs");
+		}
+	}
+
 	@Override
-	public PlatformBenchmarkResult executeAlgorithmOnGraph(Algorithm algorithm, Graph graph, Object parameters)
-			throws PlatformExecutionException {
+	public void postBenchmark(Benchmark benchmark) {
+		if(GranulaManager.isLoggingEnabled) {
+			String logDataPath = benchmark.getLogPath();
+			GiraphLogger.collectYarnLogs(logDataPath);
+			GiraphLogger.stopPlatformLogging();
+		}
+		GiraphLogger.startCoreLogging();
+	}
+
+	@Override
+	public PlatformBenchmarkResult executeAlgorithmOnGraph(Benchmark benchmark) throws PlatformExecutionException {
+
+		Algorithm algorithm = benchmark.getAlgorithm();
+		Graph graph = benchmark.getGraph();
+		Object parameters = benchmark.getAlgorithmParameters();
 		LOG.info("Executing algorithm \"{}\" on graph \"{}\".", algorithm.getName(), graph.getName());
 
 		int result;
@@ -185,7 +208,7 @@ public class GiraphPlatform implements Platform {
 	}
 
 	private void transferIfSet(org.apache.commons.configuration.Configuration source, String sourceProperty,
-			Configuration destination, IntConfOption destinationOption) throws InvalidConfigurationException {
+							   Configuration destination, IntConfOption destinationOption) throws InvalidConfigurationException {
 		if (source.containsKey(sourceProperty)) {
 			destinationOption.set(destination, ConfigurationUtil.getInteger(source, sourceProperty));
 		} else {
@@ -222,6 +245,11 @@ public class GiraphPlatform implements Platform {
 		} catch (ConfigurationException ex) {
 			return NestedConfiguration.empty();
 		}
+	}
+
+	@Override
+	public JobModel getGranulaModel() {
+		return new Giraph();
 	}
 
 }
