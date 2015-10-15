@@ -26,6 +26,10 @@ import nl.tudelft.graphalytics.giraph.algorithms.conn.ConnectedComponentsJob;
 import nl.tudelft.graphalytics.giraph.algorithms.evo.ForestFireModelJob;
 import nl.tudelft.graphalytics.giraph.algorithms.pr.PageRankJob;
 import nl.tudelft.graphalytics.giraph.algorithms.stats.LocalClusteringCoefficientJob;
+import nl.tudelft.graphalytics.giraph.reporting.logging.GiraphLogger;
+import nl.tudelft.graphalytics.reporting.granula.GranulaManager;
+import nl.tudelft.pds.granula.modeller.giraph.job.Giraph;
+import nl.tudelft.pds.granula.modeller.model.job.JobModel;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.giraph.conf.IntConfOption;
@@ -123,6 +127,25 @@ public class GiraphPlatform implements Platform {
 		pathsOfGraphs.put(graph.getName(), uploadPath);
 	}
 
+	public void preBenchmark(Benchmark benchmark) {
+
+		String logDataPath = benchmark.getLogPath();
+		GiraphLogger.stopCoreLogging();
+		if(GranulaManager.isLoggingEnabled) {
+			GiraphLogger.startPlatformLogging(logDataPath + "/OperationLog/driver.logs");
+		}
+	}
+
+	@Override
+	public void postBenchmark(Benchmark benchmark) {
+		if(GranulaManager.isLoggingEnabled) {
+			String logDataPath = benchmark.getLogPath();
+			GiraphLogger.collectYarnLogs(logDataPath);
+			GiraphLogger.stopPlatformLogging();
+		}
+		GiraphLogger.startCoreLogging();
+	}
+
 	@Override
 	public PlatformBenchmarkResult executeAlgorithmOnGraph(Benchmark benchmark) throws PlatformExecutionException {
 		Algorithm algorithm = benchmark.getAlgorithm();
@@ -185,7 +208,7 @@ public class GiraphPlatform implements Platform {
 	}
 
 	private void transferIfSet(org.apache.commons.configuration.Configuration source, String sourceProperty,
-			Configuration destination, IntConfOption destinationOption) throws InvalidConfigurationException {
+							   Configuration destination, IntConfOption destinationOption) throws InvalidConfigurationException {
 		if (source.containsKey(sourceProperty)) {
 			destinationOption.set(destination, ConfigurationUtil.getInteger(source, sourceProperty));
 		} else {
@@ -222,6 +245,11 @@ public class GiraphPlatform implements Platform {
 		} catch (ConfigurationException ex) {
 			return NestedConfiguration.empty();
 		}
+	}
+
+	@Override
+	public JobModel getGranulaModel() {
+		return new Giraph();
 	}
 
 }
