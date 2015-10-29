@@ -141,6 +141,7 @@ public class GiraphPlatform implements Platform {
 		if(GranulaManager.isLoggingEnabled) {
 			String logDataPath = benchmark.getLogPath();
 			GiraphLogger.collectYarnLogs(logDataPath);
+			GiraphLogger.collectUtilLog(null, null, 0, 0, logDataPath);
 			GiraphLogger.stopPlatformLogging();
 		}
 		GiraphLogger.startCoreLogging();
