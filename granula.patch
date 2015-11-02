@@ -1,36 +1,38 @@
-From 2f8f6f17b41b647876b0c50c73a89595d5268e8a Mon Sep 17 00:00:00 2001
+From f92f2aa2794e9813748186a5f610836357e7bb9d Mon Sep 17 00:00:00 2001
 From: Wing Lung Ngai <winglung.ngai@gmail.com>
-Date: Thu, 24 Sep 2015 21:40:58 +0200
-Subject: [PATCH] add hadoop2
+Date: Mon, 2 Nov 2015 14:47:17 +0100
+Subject: [PATCH] granularized
 
 ---
  .gitignore                                         |   2 +
+ Granula.log                                        |   1 +
  giraph-core/pom.xml                                |   6 +-
  .../netty/NettyWorkerClientRequestProcessor.java   |  17 +--
  .../netty/handler/WorkerRequestServerHandler.java  |   9 +-
  .../comm/requests/SendWorkerMessagesRequest.java   |   7 ++
  .../apache/giraph/graph/AbstractComputation.java   |   3 +
- .../org/apache/giraph/graph/ComputeCallable.java   |  12 ++-
+ .../org/apache/giraph/graph/ComputeCallable.java   |  12 +-
  .../java/org/apache/giraph/graph/GraphMapper.java  |   9 ++
- .../org/apache/giraph/graph/GraphTaskManager.java  |  79 +++++++++++++-
+ .../org/apache/giraph/graph/GraphTaskManager.java  |  82 +++++++++++++-
  .../main/java/org/apache/giraph/job/GiraphJob.java |  16 +++
- .../org/apache/giraph/master/BspServiceMaster.java |  30 +++++-
- .../org/apache/giraph/master/MasterThread.java     |  44 ++++++++
- .../metrics/granular/CountTimeSerieStore.java      | 103 ++++++++++++++++++
- .../apache/giraph/metrics/granular/GiraphTerm.java |  92 ++++++++++++++++
+ .../org/apache/giraph/master/BspServiceMaster.java |  30 ++++-
+ .../org/apache/giraph/master/MasterThread.java     |  46 ++++++++
+ .../metrics/granular/CountTimeSerieStore.java      | 103 +++++++++++++++++
+ .../apache/giraph/metrics/granular/GiraphTerm.java |  93 ++++++++++++++++
  .../giraph/metrics/granular/GranularDataStore.java |  39 +++++++
- .../giraph/metrics/granular/GranularLogger.java    |  65 ++++++++++++
- .../metrics/granular/GranularLoggerStore.java      | 116 +++++++++++++++++++++
+ .../giraph/metrics/granular/GranularLogger.java    |  65 +++++++++++
+ .../metrics/granular/GranularLoggerStore.java      | 123 +++++++++++++++++++++
  .../giraph/metrics/granular/IdentifierType.java    |  11 ++
  .../giraph/metrics/granular/MatchingMethod.java    |  10 ++
- .../giraph/metrics/granular/TimeSerieStore.java    | 103 ++++++++++++++++++
+ .../giraph/metrics/granular/TimeSerieStore.java    | 103 +++++++++++++++++
  .../org/apache/giraph/worker/BspServiceWorker.java |  69 +++++++++++-
  .../apache/giraph/worker/InputSplitsCallable.java  |   5 +
  .../giraph/yarn/GiraphApplicationMaster.java       |  15 +++
  .../org/apache/giraph/yarn/GiraphYarnClient.java   |   5 +
  .../org/apache/giraph/yarn/GiraphYarnTask.java     |  21 +++-
- pom.xml                                            |  12 +--
- 26 files changed, 869 insertions(+), 31 deletions(-)
+ pom.xml                                            |  12 +-
+ 27 files changed, 883 insertions(+), 31 deletions(-)
+ create mode 100644 Granula.log
  create mode 100644 giraph-core/src/main/java/org/apache/giraph/metrics/granular/CountTimeSerieStore.java
  create mode 100644 giraph-core/src/main/java/org/apache/giraph/metrics/granular/GiraphTerm.java
  create mode 100644 giraph-core/src/main/java/org/apache/giraph/metrics/granular/GranularDataStore.java
@@ -50,6 +52,13 @@ index 42ecd00..84c7597 100644
  /giraph-hive/derby.log
 +
 +src/site/xdoc/options.xml
+diff --git a/Granula.log b/Granula.log
+new file mode 100644
+index 0000000..1128121
+--- /dev/null
++++ b/Granula.log
+@@ -0,0 +1 @@
++Giraph distribution built by Granula
 diff --git a/giraph-core/pom.xml b/giraph-core/pom.xml
 index 85b9377..edc4089 100644
 --- a/giraph-core/pom.xml
@@ -290,7 +299,7 @@ index 6f748c5..8211257 100644
  
  }
 diff --git a/giraph-core/src/main/java/org/apache/giraph/graph/GraphTaskManager.java b/giraph-core/src/main/java/org/apache/giraph/graph/GraphTaskManager.java
-index eb9fad3..02d2a46 100644
+index eb9fad3..1b16f3b 100644
 --- a/giraph-core/src/main/java/org/apache/giraph/graph/GraphTaskManager.java
 +++ b/giraph-core/src/main/java/org/apache/giraph/graph/GraphTaskManager.java
 @@ -47,6 +47,7 @@ import org.apache.giraph.metrics.GiraphTimer;
@@ -347,8 +356,12 @@ index eb9fad3..02d2a46 100644
    }
  
    /**
-@@ -291,6 +310,18 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -289,8 +308,22 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+     List<PartitionStats> partitionStatsList = new ArrayList<PartitionStats>();
+     int numComputeThreads = conf.getNumComputeThreads();
  
++    LOG.info(GranularLoggerStore.workerTaskLogger.logInfo(GiraphTerm.StartTime, String.valueOf(System.currentTimeMillis())));
++    LOG.info(GranularLoggerStore.workerTaskLogger.logInfo(GiraphTerm.ComputeNode, serviceWorker.getWorkerInfo().getHostname()));
      // main superstep processing loop
      while (!finishedSuperstepStats.allVerticesHalted()) {
 +
@@ -366,7 +379,7 @@ index eb9fad3..02d2a46 100644
        final long superstep = serviceWorker.getSuperstep();
        GiraphTimerContext superstepTimerContext =
          getTimerForThisSuperstep(superstep);
-@@ -298,12 +329,17 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -298,12 +331,17 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
            finishedSuperstepStats.getVertexCount(),
            finishedSuperstepStats.getEdgeCount(),
            context);
@@ -384,7 +397,7 @@ index eb9fad3..02d2a46 100644
        serviceWorker.exchangeVertexPartitions(masterAssignedPartitionOwners);
        context.progress();
        boolean hasBeenRestarted = checkSuperstepRestarted(superstep);
-@@ -319,6 +355,9 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -319,6 +357,9 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
          break;
        }
        prepareForSuperstep(graphState);
@@ -394,7 +407,7 @@ index eb9fad3..02d2a46 100644
        context.progress();
        MessageStore<I, Writable> messageStore =
          serviceWorker.getServerData().getCurrentMessageStore();
-@@ -331,13 +370,24 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -331,15 +372,27 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
        }
        partitionStatsList.clear();
        // execute the current superstep
@@ -418,8 +431,11 @@ index eb9fad3..02d2a46 100644
 +
        // END of superstep compute loop
      }
++    LOG.info(GranularLoggerStore.workerTaskLogger.logInfo(GiraphTerm.EndTime, String.valueOf(System.currentTimeMillis())));
  
-@@ -597,7 +647,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+     if (LOG.isInfoEnabled()) {
+       LOG.info("execute: BSP application done (global vertices marked done)");
+@@ -597,7 +650,7 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
            "(master thread)...");
        }
        serviceMaster = new BspServiceMaster<I, V, E>(context, this);
@@ -428,7 +444,7 @@ index eb9fad3..02d2a46 100644
        masterThread.start();
      }
      if (graphFunctions.isWorker()) {
-@@ -738,6 +788,15 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -738,6 +791,15 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
  
      GiraphTimerContext computeAllTimerContext = computeAll.time();
      timeToFirstMessageTimerContext = timeToFirstMessage.time();
@@ -444,7 +460,7 @@ index eb9fad3..02d2a46 100644
  
      CallableFactory<Collection<PartitionStats>> callableFactory =
          new CallableFactory<Collection<PartitionStats>>() {
-@@ -760,6 +819,14 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -760,6 +822,14 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
        partitionStatsList.addAll(result);
      }
  
@@ -459,7 +475,7 @@ index eb9fad3..02d2a46 100644
      computeAllTimerContext.stop();
    }
  
-@@ -901,7 +968,6 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -901,7 +971,6 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
      if (done) {
        return;
      }
@@ -467,7 +483,7 @@ index eb9fad3..02d2a46 100644
      if (serviceWorker != null) {
        serviceWorker.cleanup(finishedSuperstepStats);
        postSaveOnWorkerObservers();
-@@ -915,8 +981,12 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -915,8 +984,12 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
        // cleanup phase -- just log the error
        LOG.error("cleanup: Master thread couldn't join");
      }
@@ -480,7 +496,7 @@ index eb9fad3..02d2a46 100644
        try {
          zkManager.offlineZooKeeperServers(ZooKeeperManager.State.FINISHED);
        // We need this here cause apparently exceptions are eaten by Hadoop
-@@ -926,14 +996,17 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
+@@ -926,14 +999,17 @@ public class GraphTaskManager<I extends WritableComparable, V extends Writable,
        // And since it's cleanup nothing too bad should happen if we don't
        // propagate and just allow the job to finish normally.
        // CHECKSTYLE: stop IllegalCatch
@@ -648,7 +664,7 @@ index 39b4a1c..1b03363 100644
  
      try {
 diff --git a/giraph-core/src/main/java/org/apache/giraph/master/MasterThread.java b/giraph-core/src/main/java/org/apache/giraph/master/MasterThread.java
-index 8e4e0b8..4c6dea8 100644
+index 8e4e0b8..5d0ff9b 100644
 --- a/giraph-core/src/main/java/org/apache/giraph/master/MasterThread.java
 +++ b/giraph-core/src/main/java/org/apache/giraph/master/MasterThread.java
 @@ -22,9 +22,11 @@ import org.apache.giraph.bsp.ApplicationState;
@@ -675,7 +691,7 @@ index 8e4e0b8..4c6dea8 100644
    /**
     * Constructor.
     *
-@@ -115,8 +122,38 @@ public class MasterThread<I extends WritableComparable, V extends Writable,
+@@ -115,8 +122,39 @@ public class MasterThread<I extends WritableComparable, V extends Writable,
            long setupMillis = System.currentTimeMillis() - initializeMillis;
            GiraphTimers.getInstance().getSetupMs().increment(setupMillis);
            setupSecs = setupMillis / 1000.0d;
@@ -700,10 +716,11 @@ index 8e4e0b8..4c6dea8 100644
 +            }
 +
 +            if(superstep == -1) {
-+
-+
 +                LOG.info(GranularLoggerStore.globalDataloadLogger.logInfo(GiraphTerm.StartTime, String.valueOf(System.currentTimeMillis())));
 +            } else {
++                if(superstep == 0) {
++                    LOG.info(GranularLoggerStore.masterTaskLogger.logInfo(GiraphTerm.StartTime, String.valueOf(System.currentTimeMillis())));
++                }
 +                GranularLoggerStore.globalSuperstepLogger.resetUuid();
 +                GranularLoggerStore.globalSuperstepLogger.setMissionId(String.valueOf(bspServiceMaster.getSuperstep()));
 +                LOG.info(GranularLoggerStore.globalSuperstepLogger.logInfo(GiraphTerm.StartTime, String.valueOf(System.currentTimeMillis())));
@@ -714,7 +731,7 @@ index 8e4e0b8..4c6dea8 100644
              long cachedSuperstep = bspServiceMaster.getSuperstep();
              GiraphMetrics.get().resetSuperstepMetrics(cachedSuperstep);
              Class<? extends Computation> computationClass =
-@@ -149,10 +186,17 @@ public class MasterThread<I extends WritableComparable, V extends Writable,
+@@ -149,10 +187,18 @@ public class MasterThread<I extends WritableComparable, V extends Writable,
                    bspServiceMaster.getLastGoodCheckpoint());
              }
              endMillis = System.currentTimeMillis();
@@ -724,6 +741,7 @@ index 8e4e0b8..4c6dea8 100644
 +                LOG.info(GranularLoggerStore.globalSuperstepLogger.logInfo(GiraphTerm.EndTime, String.valueOf(System.currentTimeMillis())));
 +            }
            }
++          LOG.info(GranularLoggerStore.masterTaskLogger.logInfo(GiraphTerm.EndTime, String.valueOf(System.currentTimeMillis())));
 +          LOG.info(GranularLoggerStore.bspIterationLogger.logInfo(GiraphTerm.EndTime, String.valueOf(System.currentTimeMillis())));
            bspServiceMaster.setJobState(ApplicationState.FINISHED, -1, -1);
          }
@@ -843,10 +861,10 @@ index 0000000..004fa44
 +}
 diff --git a/giraph-core/src/main/java/org/apache/giraph/metrics/granular/GiraphTerm.java b/giraph-core/src/main/java/org/apache/giraph/metrics/granular/GiraphTerm.java
 new file mode 100644
-index 0000000..32f5471
+index 0000000..a95f881
 --- /dev/null
 +++ b/giraph-core/src/main/java/org/apache/giraph/metrics/granular/GiraphTerm.java
-@@ -0,0 +1,92 @@
+@@ -0,0 +1,93 @@
 +package org.apache.giraph.metrics.granular;
 +
 +/**
@@ -886,7 +904,8 @@ index 0000000..32f5471
 +    public static String MsgSend = "MsgSend";
 +    public static String PostSuperstep = "PostSuperstep";
 +
-+
++    public static String WorkerTask = "WorkerTask";
++    public static String MasterTask = "MasterTask";
 +    public static String BspCleanup = "BspCleanup";
 +    public static String ZookeeperCleanup = "ZookeeperCleanup";
 +    public static String FinalCleanup = "FinalCleanup";
@@ -1057,10 +1076,10 @@ index 0000000..4580c4c
 +}
 diff --git a/giraph-core/src/main/java/org/apache/giraph/metrics/granular/GranularLoggerStore.java b/giraph-core/src/main/java/org/apache/giraph/metrics/granular/GranularLoggerStore.java
 new file mode 100644
-index 0000000..69d96aa
+index 0000000..f672b7e
 --- /dev/null
 +++ b/giraph-core/src/main/java/org/apache/giraph/metrics/granular/GranularLoggerStore.java
-@@ -0,0 +1,116 @@
+@@ -0,0 +1,123 @@
 +package org.apache.giraph.metrics.granular;
 +
 +/**
@@ -1084,6 +1103,8 @@ index 0000000..69d96aa
 +
 +    public static GranularLogger dataOffloadLogger;
 +
++    public static GranularLogger workerTaskLogger;
++    public static GranularLogger masterTaskLogger;
 +    public static GranularLogger bspCleanupLogger;
 +    public static GranularLogger zookeeperCleanupLogger;
 +    public static GranularLogger unknownCleanup1Logger;
@@ -1139,6 +1160,11 @@ index 0000000..69d96aa
 +        outputMergeLogger = new GranularLogger(GiraphTerm.BspWorker, GranularDataStore.workerId,
 +                GiraphTerm.OutputMerge, IdentifierType.Unique);
 +
++        workerTaskLogger = new GranularLogger(GiraphTerm.BspWorker, GranularDataStore.workerId,
++                GiraphTerm.WorkerTask, IdentifierType.Unique);
++
++        masterTaskLogger = new GranularLogger(GiraphTerm.BspWorker, GranularDataStore.workerId,
++                GiraphTerm.MasterTask, IdentifierType.Unique);
 +
 +        zookeeperOffliningLogger = new GranularLogger(GiraphTerm.BspWorker, GranularDataStore.workerId,
 +                GiraphTerm.ZookeeperOfflining, IdentifierType.Unique);
