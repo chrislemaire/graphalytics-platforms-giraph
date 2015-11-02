@@ -22,7 +22,7 @@ rm -Rf /tmp/granula
 git clone https://github.com/tudelft-atlarge/granula /tmp/granula
 cd /tmp/granula
 
-git checkout pre-alpha
+git checkout graphalytics-stable
 
 cd /tmp/granula/granula-modeller/giraph/1.1.0/analyzer
 mvn clean install -DskipTests
