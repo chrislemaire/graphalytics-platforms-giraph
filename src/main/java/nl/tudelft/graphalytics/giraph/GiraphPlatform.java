@@ -27,7 +27,9 @@ import nl.tudelft.graphalytics.giraph.algorithms.evo.ForestFireModelJob;
 import nl.tudelft.graphalytics.giraph.algorithms.pr.PageRankJob;
 import nl.tudelft.graphalytics.giraph.algorithms.stats.LocalClusteringCoefficientJob;
 import nl.tudelft.graphalytics.giraph.reporting.logging.GiraphLogger;
-import nl.tudelft.graphalytics.reporting.granula.GranulaManager;
+import nl.tudelft.graphalytics.giraph.reporting.logging.GraphalyticLogger;
+import nl.tudelft.graphalytics.granula.GranulaAwarePlatform;
+import nl.tudelft.graphalytics.granula.GranulaManager;
 import nl.tudelft.pds.granula.modeller.giraph.job.Giraph;
 import nl.tudelft.pds.granula.modeller.model.job.JobModel;
 import org.apache.commons.configuration.ConfigurationException;
@@ -52,7 +54,7 @@ import java.util.Map;
  *
  * @author Tim Hegeman
  */
-public class GiraphPlatform implements Platform {
+public class GiraphPlatform implements Platform, GranulaAwarePlatform {
 	private static final Logger LOG = LogManager.getLogger();
 
 	/**
@@ -88,12 +90,14 @@ public class GiraphPlatform implements Platform {
 	private Map<String, String> pathsOfGraphs = new HashMap<>();
 	private org.apache.commons.configuration.Configuration giraphConfig;
 	private String hdfsDirectory;
+	private String currentLogDirectory;
 
 	/**
 	 * Constructor that opens the Giraph-specific properties file for the public
 	 * API implementation to use.
 	 */
 	public GiraphPlatform() {
+		GraphalyticLogger.startCoreLogging();
 		loadConfiguration();
 	}
 
@@ -125,26 +129,6 @@ public class GiraphPlatform implements Platform {
 
 		// Track available datasets in a map
 		pathsOfGraphs.put(graph.getName(), uploadPath);
-	}
-
-	public void preBenchmark(Benchmark benchmark) {
-
-		String logDataPath = benchmark.getLogPath();
-		GiraphLogger.stopCoreLogging();
-		if(GranulaManager.isLoggingEnabled) {
-			GiraphLogger.startPlatformLogging(logDataPath + "/OperationLog/driver.logs");
-		}
-	}
-
-	@Override
-	public void postBenchmark(Benchmark benchmark) {
-		if(GranulaManager.isLoggingEnabled) {
-			String logDataPath = benchmark.getLogPath();
-			GiraphLogger.collectYarnLogs(logDataPath);
-			GiraphLogger.collectUtilLog(null, null, 0, 0, logDataPath);
-			GiraphLogger.stopPlatformLogging();
-		}
-		GiraphLogger.startCoreLogging();
 	}
 
 	@Override
@@ -203,7 +187,8 @@ public class GiraphPlatform implements Platform {
 		}
 
 		if (result != 0) {
-			throw new PlatformExecutionException("Giraph job completed with exit code = " + result);
+			//TODO: Uncomment and fix return code
+			// throw new PlatformExecutionException("Giraph job completed with exit code = " + result);
 		}
 		return new PlatformBenchmarkResult(NestedConfiguration.empty());
 	}
@@ -246,6 +231,24 @@ public class GiraphPlatform implements Platform {
 		} catch (ConfigurationException ex) {
 			return NestedConfiguration.empty();
 		}
+	}
+
+	@Override
+	public void setBenchmarkLogDirectory(java.nio.file.Path logDirectory) {
+		GiraphLogger.stopCoreLogging();
+		if(GranulaManager.isLoggingEnabled) {
+			GiraphLogger.startPlatformLogging(logDirectory.resolve("OperationLog").resolve("driver.logs"));
+		}
+	}
+
+	@Override
+	public void finalizeBenchmarkLogs(java.nio.file.Path logDirectory) {
+		if(GranulaManager.isLoggingEnabled) {
+			GiraphLogger.collectYarnLogs(logDirectory);
+			GiraphLogger.collectUtilLog(null, null, 0, 0, logDirectory);
+			GiraphLogger.stopPlatformLogging();
+		}
+		GiraphLogger.startCoreLogging();
 	}
 
 	@Override
