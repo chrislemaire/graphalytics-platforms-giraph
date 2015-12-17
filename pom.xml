@@ -23,7 +23,7 @@
 	</scm>
 
 	<dependencies>
-		<!-- Graphalytics dependencies: core + resources, validation -->
+		<!-- Graphalytics dependencies: core + resources, validation, granula plugin -->
 		<dependency>
 			<groupId>nl.tudelft.graphalytics</groupId>
 			<artifactId>graphalytics-core</artifactId>
@@ -42,6 +42,11 @@
 			<artifactId>graphalytics-validation</artifactId>
 			<version>${graphalytics.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>nl.tudelft.graphalytics</groupId>
+			<artifactId>graphalytics-plugins-granula</artifactId>
+			<version>${graphalytics.version}</version>
 		</dependency>
 
 		<!-- Logging framework -->
