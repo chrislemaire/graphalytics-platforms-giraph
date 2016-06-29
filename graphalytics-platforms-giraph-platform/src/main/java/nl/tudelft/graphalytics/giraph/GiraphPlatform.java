@@ -184,6 +184,8 @@ public class GiraphPlatform implements Platform {
 			transferIfSet(giraphConfig, JOB_HEAPSIZE, jobConf, GiraphJob.HEAP_SIZE_MB);
 			transferIfSet(giraphConfig, JOB_MEMORYSIZE, jobConf, GiraphJob.WORKER_MEMORY_MB);
 
+			GiraphJob.JOB_ID.set(jobConf, benchmark.getId());
+
 			transferGiraphOptions(giraphConfig, jobConf);
 
 			// Execute the Giraph job

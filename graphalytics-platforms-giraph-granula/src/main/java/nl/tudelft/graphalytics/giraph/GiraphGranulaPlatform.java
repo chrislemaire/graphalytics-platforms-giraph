@@ -15,11 +15,12 @@
  */
 package nl.tudelft.graphalytics.giraph;
 
+import nl.tudelft.granula.modeller.job.JobModel;
+import nl.tudelft.granula.modeller.platform.Giraph;
+import nl.tudelft.graphalytics.domain.Benchmark;
 import nl.tudelft.graphalytics.giraph.reporting.logging.GiraphLogger;
 import nl.tudelft.graphalytics.granula.GranulaAwarePlatform;
 import nl.tudelft.graphalytics.granula.GranulaManager;
-import nl.tudelft.pds.granula.modeller.giraph.job.Giraph;
-import nl.tudelft.pds.granula.modeller.model.job.JobModel;
 import java.nio.file.Path;
 
 /**
@@ -27,19 +28,18 @@ import java.nio.file.Path;
  */
 public final class GiraphGranulaPlatform extends GiraphPlatform implements GranulaAwarePlatform {
 
-
 	@Override
-	public void setBenchmarkLogDirectory(Path logDirectory) {
+	public void preBenchmark(Benchmark benchmark, Path path) {
 		GiraphLogger.stopCoreLogging();
 		if(GranulaManager.isLoggingEnabled) {
-			GiraphLogger.startPlatformLogging(logDirectory.resolve("OperationLog").resolve("driver.logs"));
+			GiraphLogger.startPlatformLogging(path.resolve("OperationLog").resolve("driver.logs"));
 		}
 	}
 
 	@Override
-	public void finalizeBenchmarkLogs(Path logDirectory) {
+	public void postBenchmark(Benchmark benchmark, Path path) {
 		if(GranulaManager.isLoggingEnabled) {
-			GiraphLogger.collectYarnLogs(logDirectory);
+			GiraphLogger.collectYarnLogs(path);
 //			GiraphLogger.collectUtilLog(null, null, 0, 0, logDirectory);
 			GiraphLogger.stopPlatformLogging();
 		}
@@ -48,7 +48,7 @@ public final class GiraphGranulaPlatform extends GiraphPlatform implements Granu
 	}
 
 	@Override
-	public JobModel getGranulaModel() {
-		return new Giraph();
+	public JobModel getPerformanceModel() {
+		return new JobModel(new Giraph());
 	}
 }

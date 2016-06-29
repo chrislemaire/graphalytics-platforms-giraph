@@ -178,11 +178,4 @@ public class GraphalyticLogger {
 
     }
 
-    public static void collectUtilLog(List<String> nodes, List<String> metrics, long startTime, long endTime, Path logDataPath) {
-        if(GranulaManager.isUtilLoggingEnabled) {
-            UtilizationLogger utilLogger = GranulaManager.utilizationLogger;
-            utilLogger.collectUtilData(nodes, metrics, startTime, endTime, logDataPath);
-        }
-    }
-
 }

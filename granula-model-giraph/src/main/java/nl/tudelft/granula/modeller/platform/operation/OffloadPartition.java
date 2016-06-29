@@ -14,25 +14,27 @@
  * limitations under the License.
  */
 
-package nl.tudelft.pds.granula.modeller.giraph.operation;
+package nl.tudelft.granula.modeller.platform.operation;
 
-import nl.tudelft.pds.granula.modeller.giraph.GiraphType;
-import nl.tudelft.pds.granula.modeller.model.operation.ConcreteOperationModel;
-import nl.tudelft.pds.granula.modeller.rule.linking.UniqueParentLinking;
-import nl.tudelft.pds.granula.modeller.rule.visual.MainInfoTableVisualization;
+import nl.tudelft.granula.modeller.Type;
+import nl.tudelft.granula.modeller.rule.derivation.SimpleSummaryDerivation;
+import nl.tudelft.granula.modeller.rule.linking.UniqueParentLinking;
+import nl.tudelft.granula.modeller.rule.visual.MainInfoTableVisualization;
 
 import java.util.ArrayList;
 
-public class BspSuperstep extends ConcreteOperationModel {
+public class OffloadPartition extends RealtimeOperationModel {
 
-    public BspSuperstep() {
-        super(GiraphType.Bsp, GiraphType.Superstep);
+    public OffloadPartition() {
+        super(Type.Worker, Type.OffloadPartition);
     }
 
     public void loadRules() {
         super.loadRules();
-        addLinkingRule(new UniqueParentLinking(GiraphType.Giraph, GiraphType.ProcessGraph));
+        addLinkingRule(new UniqueParentLinking(Type.Giraph, Type.OffloadGraph));
 
+        String summary = "Offload partition.";
+        addInfoDerivation(new SimpleSummaryDerivation(11, summary));
 
         addVisualDerivation(new MainInfoTableVisualization(1,
                 new ArrayList<String>() {{
