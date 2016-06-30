@@ -30,7 +30,7 @@ public final class GiraphGranulaPlatform extends GiraphPlatform implements Granu
 	@Override
 	public void preBenchmark(Benchmark benchmark, Path path) {
 		PlatformLogger.stopCoreLogging();
-		PlatformLogger.startPlatformLogging(path.resolve("OperationLog").resolve("driver.logs"));
+		PlatformLogger.startPlatformLogging(path.resolve("platform").resolve("driver.logs"));
 	}
 
 	@Override

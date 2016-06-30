@@ -158,9 +158,9 @@ public class PlatformLogger {
     }
 
     public static void collectYarnLogs(Path logDataPath) {
-        List<String> appIds = getYarnAppIds(logDataPath.resolve("OperationLog").resolve("driver.logs"));
+        List<String> appIds = getYarnAppIds(logDataPath.resolve("platform").resolve("driver.logs"));
         for (String appId : appIds) {
-            collectYarnLog(appId, logDataPath + "/OperationLog/yarn" + appId + ".logs");
+            collectYarnLog(appId, logDataPath + "/platform/yarn" + appId + ".logs");
         }
 
     }
