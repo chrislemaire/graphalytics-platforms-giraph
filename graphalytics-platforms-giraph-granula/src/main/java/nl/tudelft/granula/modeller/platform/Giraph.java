@@ -71,7 +71,7 @@ public class Giraph extends PlatformModel {
             Job job = platform.getJob();
             Overview overview = job.getOverview();
 
-            overview.setDescription("This is a Graphmat job.");
+            overview.setDescription("This is a Giraph job.");
 
             Operation jobOper = platform.findOperation(Type.Giraph, Type.Job);
             jobOper.parentId = null;

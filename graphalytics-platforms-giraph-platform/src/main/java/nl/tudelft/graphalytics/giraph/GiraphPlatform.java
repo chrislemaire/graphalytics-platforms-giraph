@@ -194,7 +194,7 @@ public class GiraphPlatform implements Platform {
 
 			if(benchmark.isOutputRequired()){
 					FileSystem fs = FileSystem.get(new Configuration());
-					fs.copyToLocalFile(new Path(hdfsOutputPath), new Path(benchmark.getOutputPath()));
+					fs.copyToLocalFile(false, new Path(hdfsOutputPath), new Path(benchmark.getOutputPath()), true);
 					fs.close();
 			}
 
