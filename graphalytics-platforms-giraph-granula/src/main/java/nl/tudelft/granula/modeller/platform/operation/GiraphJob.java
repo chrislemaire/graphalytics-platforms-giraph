@@ -22,7 +22,6 @@ import nl.tudelft.granula.modeller.rule.derivation.time.DurationDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.time.JobEndTimeDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.time.JobStartTimeDerivation;
 import nl.tudelft.granula.modeller.rule.linking.EmptyLinking;
-import nl.tudelft.granula.modeller.rule.visual.MainInfoTableVisualization;
 
 import java.util.ArrayList;
 
@@ -42,10 +41,7 @@ public class GiraphJob extends nl.tudelft.granula.modeller.platform.operation.Ab
         String summary = "A Giraph Job.";
         addInfoDerivation(new SimpleSummaryDerivation(11, summary));
 
-        addVisualDerivation(new MainInfoTableVisualization(1,
-                new ArrayList<String>() {{
-//                    add("InputMethod");
-                }}));
+
     }
 
 }

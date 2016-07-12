@@ -23,7 +23,6 @@ import nl.tudelft.granula.modeller.rule.derivation.time.DurationDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.time.FilialEndTimeDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.time.FilialStartTimeDerivation;
 import nl.tudelft.granula.modeller.rule.linking.UniqueParentLinking;
-import nl.tudelft.granula.modeller.rule.visual.MainInfoTableVisualization;
 
 import java.util.ArrayList;
 
@@ -45,9 +44,7 @@ public class OffloadGraph extends AbstractOperationModel {
         String summary = "OffloadGraph.";
         addInfoDerivation(new SimpleSummaryDerivation(11, summary));
 
-        addVisualDerivation(new MainInfoTableVisualization(1,
-                new ArrayList<String>() {{
-                }}));
+
     }
 
 

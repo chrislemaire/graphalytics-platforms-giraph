@@ -19,7 +19,6 @@ package nl.tudelft.granula.modeller.platform.operation;
 import nl.tudelft.granula.modeller.Type;
 import nl.tudelft.granula.modeller.rule.derivation.SimpleSummaryDerivation;
 import nl.tudelft.granula.modeller.rule.linking.UniqueParentLinking;
-import nl.tudelft.granula.modeller.rule.visual.MainInfoTableVisualization;
 
 import java.util.ArrayList;
 
@@ -37,9 +36,7 @@ public class LoadGraph extends RealtimeOperationModel {
         String summary = "LoadGraph.";
         addInfoDerivation(new SimpleSummaryDerivation(11, summary));
 
-        addVisualDerivation(new MainInfoTableVisualization(1,
-                new ArrayList<String>() {{
-                }}));
+
     }
 
 }

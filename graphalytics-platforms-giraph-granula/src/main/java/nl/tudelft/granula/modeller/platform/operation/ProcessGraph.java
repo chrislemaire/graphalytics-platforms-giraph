@@ -19,7 +19,7 @@ package nl.tudelft.granula.modeller.platform.operation;
 import nl.tudelft.granula.modeller.Type;
 import nl.tudelft.granula.modeller.rule.derivation.SimpleSummaryDerivation;
 import nl.tudelft.granula.modeller.rule.linking.UniqueParentLinking;
-import nl.tudelft.granula.modeller.rule.visual.MainInfoTableVisualization;
+import nl.tudelft.granula.modeller.rule.visual.TableVisualization;
 
 import java.util.ArrayList;
 
@@ -38,9 +38,11 @@ public class ProcessGraph extends RealtimeOperationModel {
         String summary = "ProcessGraph.";
         addInfoDerivation(new SimpleSummaryDerivation(11, summary));
 
-        addVisualDerivation(new MainInfoTableVisualization(1,
-                new ArrayList<String>() {{
-                }}));
+        addVisualDerivation(new TableVisualization(
+                1, "MainInfos", new ArrayList<String>() {{
+//            add("StartTime");
+//            add("EndTime");
+        }}));
     }
 
 }
