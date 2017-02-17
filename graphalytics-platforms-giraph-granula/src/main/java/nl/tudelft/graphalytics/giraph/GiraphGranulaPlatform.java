@@ -59,7 +59,7 @@ public final class GiraphGranulaPlatform extends GiraphPlatform implements Granu
 	public void enrichMetrics(BenchmarkResult benchmarkResult, Path arcDirectory) {
 		try {
 			PlatformArchive platformArchive = PlatformArchive.readArchive(arcDirectory);
-			JSONObject processGraph = platformArchive.operation("ProcessGraph");
+			JSONObject processGraph = platformArchive.operation("Execute");
 			Integer procTime = Integer.parseInt(platformArchive.info(processGraph, "Duration"));
 			BenchmarkMetrics metrics = benchmarkResult.getMetrics();
 			metrics.setProcessingTime(procTime);
