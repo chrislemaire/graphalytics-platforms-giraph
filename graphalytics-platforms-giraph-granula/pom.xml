@@ -9,8 +9,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hadoop.version>2.4.1</hadoop.version>
-		<giraph.version>1.1.0-hadoop2</giraph.version>
-		<giraph.granula.version>1.1.0-hadoop2-withGranula</giraph.granula.version>
+		<giraph.version>1.2.0-hadoop2</giraph.version>
+		<giraph.granula.version>1.2.0-hadoop2-withGranula</giraph.granula.version>
 		<graphalytics.version>0.4-SNAPSHOT</graphalytics.version>
 		<log4j.version>2.5</log4j.version>
 	</properties>
