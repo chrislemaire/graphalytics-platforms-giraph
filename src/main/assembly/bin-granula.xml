@@ -10,7 +10,7 @@
 		<!--Platform ReadMe files-->
 		<file>
 			<source>${project.basedir}/README.md</source>
-			<outputDirectory>.</outputDirectory>
+			<outputDirectory>doc</outputDirectory>
 			<destName>README-graphalytics-${platform.name}.md</destName>
 		</file>
 		<!--Graphalytics platform driver JAR-->
@@ -29,9 +29,15 @@
 		<!--Platform configuration files-->
 		<fileSet>
 			<directory>${project.basedir}</directory>
+			<outputDirectory>sh</outputDirectory>
+			<includes>
+				<include>*.sh</include>
+			</includes>
+		</fileSet>
+		<fileSet>
+			<directory>${project.basedir}</directory>
 			<outputDirectory>.</outputDirectory>
 			<includes>
-				<include>prepare-benchmark.sh</include>
 				<include>config-template/**</include>
 			</includes>
 		</fileSet>
