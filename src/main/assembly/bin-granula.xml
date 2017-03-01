@@ -23,6 +23,10 @@
 	</dependencySets>
 
 	<fileSets>
+		<fileSet><!--Platform source files-->
+			<directory>${project.basedir}/src</directory>
+			<outputDirectory>src</outputDirectory>
+		</fileSet>
 		<fileSet><!--Platform script files-->
 			<directory>${project.basedir}</directory>
 			<outputDirectory>.</outputDirectory>
