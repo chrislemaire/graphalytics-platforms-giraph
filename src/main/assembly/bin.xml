@@ -1,14 +1,13 @@
 <assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
 		  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+		  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+		  http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 	<id>bin</id>
 	<formats>
 		<format>tar.gz</format>
 	</formats>
 
-
-	<!--Core common files-->
-	<dependencySets>
+	<dependencySets><!--Core common files-->
 		<dependencySet>
 			<outputDirectory>.</outputDirectory>
 			<includes>
@@ -23,30 +22,15 @@
 		</dependencySet>
 	</dependencySets>
 
-	<files>
-		<!--Platform ReadMe files-->
-		<file>
-			<source>${project.basedir}/README.md</source>
-			<outputDirectory>doc</outputDirectory>
-			<destName>README-graphalytics-${platform.name}.md</destName>
-		</file>
-		<!--Graphalytics platform driver JAR-->
-		<file>
-			<source>${project.basedir}/target/${project.artifactId}-${project.version}-default.jar</source>
-			<outputDirectory>lib</outputDirectory>
-			<destName>${project.artifactId}-${project.version}-default.jar</destName>
-		</file>
-	</files>
 	<fileSets>
-		<!--Platform configuration files-->
-		<fileSet>
+		<fileSet><!--Platform script files-->
 			<directory>${project.basedir}</directory>
-			<outputDirectory>sh</outputDirectory>
+			<outputDirectory>.</outputDirectory>
 			<includes>
-				<include>*.sh</include>
+				<include>sh/**</include>
 			</includes>
 		</fileSet>
-		<fileSet>
+		<fileSet><!--Platform configuration files-->
 			<directory>${project.basedir}</directory>
 			<outputDirectory>.</outputDirectory>
 			<includes>
@@ -54,7 +38,18 @@
 			</includes>
 		</fileSet>
 	</fileSets>
-
+	<files>
+		<file><!--Platform ReadMe files-->
+			<source>${project.basedir}/README.md</source>
+			<outputDirectory>doc</outputDirectory>
+			<destName>README-graphalytics-${platform.name}.md</destName>
+		</file>
+		<file><!--Graphalytics platform driver JAR-->
+			<source>${project.basedir}/target/${project.artifactId}-${project.version}-default.jar</source>
+			<outputDirectory>lib</outputDirectory>
+			<destName>${project.artifactId}-${project.version}-default.jar</destName>
+		</file>
+	</files>
 
 
 </assembly>
