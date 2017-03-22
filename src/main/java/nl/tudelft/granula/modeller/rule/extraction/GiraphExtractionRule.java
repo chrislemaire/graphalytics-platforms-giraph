@@ -45,9 +45,14 @@ public class GiraphExtractionRule extends ExtractionRule {
                 lineCount++;
 
                 if(line.contains("GRANULA") ) {
+
+                    if(line.contains("Execute")) {
+                        line = line.replace("Execute", "ProcessGraph");
+                    }
+
                     parseGranulaLog(line, lineCount, granularlogList);
                 } else if(line.contains("OperationLog")) {
-                    parseGrade10Log(line, lineCount, granularlogList);
+//                    parseGrade10Log(line, lineCount, granularlogList);
                 }
             }
             br.close();

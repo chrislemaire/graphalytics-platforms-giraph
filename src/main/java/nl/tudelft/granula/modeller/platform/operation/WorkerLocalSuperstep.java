@@ -33,7 +33,8 @@ public class WorkerLocalSuperstep extends RealtimeOperationModel {
 
     public void loadRules() {
         super.loadRules();
-        addLinkingRule(new UniqueParentLinking(Type.Giraph, Type.Execute));
+        addLinkingRule(new EmptyLinking());
+//        addLinkingRule(new UniqueParentLinking(Type.Giraph, Type.Execute));
         addInfoDerivation(new FilialLongAggregationDerivation(3, "Compute", "Duration", "ComputeTime"));
 //        addLinkingRule(new EmptyLinking());
 

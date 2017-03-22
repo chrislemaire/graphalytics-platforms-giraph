@@ -17,29 +17,43 @@
 package nl.tudelft.granula.modeller.platform.operation;
 
 import nl.tudelft.granula.modeller.Type;
+import nl.tudelft.granula.modeller.platform.info.BasicInfo;
+import nl.tudelft.granula.modeller.platform.info.Info;
+import nl.tudelft.granula.modeller.platform.info.InfoSource;
+import nl.tudelft.granula.modeller.platform.info.Source;
+import nl.tudelft.granula.modeller.rule.derivation.ColorDerivation;
+import nl.tudelft.granula.modeller.rule.derivation.DerivationRule;
 import nl.tudelft.granula.modeller.rule.derivation.FilialCompletenessDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.SimpleSummaryDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.time.DurationDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.time.FilialEndTimeDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.time.FilialStartTimeDerivation;
+import nl.tudelft.granula.modeller.rule.derivation.time.JobStartTimeDerivation;
 import nl.tudelft.granula.modeller.rule.linking.UniqueParentLinking;
 
-public class GiraphPrepare extends AbstractOperationModel {
+import java.util.ArrayList;
+import java.util.List;
 
-    public GiraphPrepare() {
-        super(Type.Giraph, Type.Prepare);
+public class GiraphStartup extends AbstractOperationModel {
+
+    public GiraphStartup() {
+        super(Type.Giraph, Type.Startup);
     }
 
     public void loadRules() {
         super.loadRules();
-        addLinkingRule(new UniqueParentLinking(Type.Giraph, Type.Startup));
+        addLinkingRule(new UniqueParentLinking(Type.Giraph, Type.Job));
 
-        addInfoDerivation(new FilialStartTimeDerivation(4));
-        addInfoDerivation(new FilialEndTimeDerivation(4));
-        addInfoDerivation(new DurationDerivation(5));
-        this.addInfoDerivation(new FilialCompletenessDerivation(1));
+        addInfoDerivation(new JobStartTimeDerivation(1));
+        addInfoDerivation(new FilialEndTimeDerivation(5));
+        addInfoDerivation(new DurationDerivation(6));
+        this.addInfoDerivation(new FilialCompletenessDerivation(2));
 
         String summary = "Prepare.";
         addInfoDerivation(new SimpleSummaryDerivation(11, summary));
+
+        addInfoDerivation(new ColorDerivation(11, "#666"));
     }
+
 }
+

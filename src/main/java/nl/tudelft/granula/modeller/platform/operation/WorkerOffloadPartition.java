@@ -17,25 +17,21 @@
 package nl.tudelft.granula.modeller.platform.operation;
 
 import nl.tudelft.granula.modeller.Type;
-import nl.tudelft.granula.modeller.rule.derivation.ColorDerivation;
 import nl.tudelft.granula.modeller.rule.derivation.SimpleSummaryDerivation;
 import nl.tudelft.granula.modeller.rule.linking.UniqueParentLinking;
 
-public class WorkerPostCompute extends RealtimeOperationModel {
+public class WorkerOffloadPartition extends RealtimeOperationModel {
 
-    public WorkerPostCompute() {
-        super(Type.Worker, Type.PostCompute);
+    public WorkerOffloadPartition() {
+        super(Type.Worker, Type.OffloadPartition);
     }
 
     public void loadRules() {
         super.loadRules();
 
-        addLinkingRule(new UniqueParentLinking(Type.Giraph, Type.ProcessGraph));
+        addLinkingRule(new UniqueParentLinking(Type.Giraph, Type.OffloadGraph));
 //        addLinkingRule(new IdentifierParentLinking(Type.Worker, Type.Equal, Type.LocalSuperstep, Type.Equal));
-
-
-        String summary = "PostCompute.";
+        String summary = "Compute.";
         addInfoDerivation(new SimpleSummaryDerivation(11, summary));
-        addInfoDerivation(new ColorDerivation(11, "#999"));
     }
 }

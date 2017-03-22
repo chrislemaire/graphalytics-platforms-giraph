@@ -26,9 +26,9 @@ public class ModelTester {
                 Paths.get(inputPath + "/execution/execution-log.js")), Execution.class);
         execution.setLogPath(inputPath);
         // Set end time in "log directory"/execution/execution-log.js, or the end time is set as the current time.
-//        execution.setEndTime(System.currentTimeMillis());
+        execution.setEndTime(execution.getStartTime() + 90000);
         execution.setArcPath(outputPath);
-        JobModel jobModel = new JobModel(GranulaPlugin.getPlatformModel(execution.getPlatform()));
+        JobModel jobModel = new JobModel(new Giraph());
 
         GranulaExecutor granulaExecutor = new GranulaExecutor();
         granulaExecutor.setEnvEnabled(false);
